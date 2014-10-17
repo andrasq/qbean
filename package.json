@@ -1,0 +1,34 @@
+{
+  "name": "qbean",
+  "version": "0.0.1",
+  "description": "quick beanstalkd queue client",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/andrasq/qbean"
+  },
+  "main": "index.js",
+  "author": {
+    "name": "Andras",
+    "url": "http://github.com/andrasq"
+  },
+  "engines": {
+    "node": ">=0.0.0"
+  },
+  "scripts": {
+    "test": "nodeunit"
+  },
+  "keywords": [
+    "beanstalk",
+    "beanstalkd",
+    "quick",
+    "queue",
+    "queueing",
+    "client"
+  ],
+  "dependencies": {
+  },
+  "devDependencies": {
+    "nodeunit": "*"
+  }
+}
