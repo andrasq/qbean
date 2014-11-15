@@ -1,6 +1,6 @@
 {
   "name": "qbean",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "quick beanstalkd queue client",
   "license": "Apache-2.0",
   "repository": {
@@ -19,6 +19,7 @@
     "test": "nodeunit"
   },
   "keywords": [
+    "Andras",
     "beanstalk",
     "beanstalkd",
     "quick",

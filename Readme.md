@@ -43,6 +43,8 @@ QBean returns error objects on errors, not error strings.
 
 ### Summary
 
+    net = require('net');
+    stream = net.createConnection(11300, 'localhost');
     QBean = require('qbean');
     bean = new QBean(options, stream);
     
@@ -58,7 +60,12 @@ QBean returns error objects on errors, not error strings.
       });
     });
 
-### Command List
+### new QBean( options, stream )
+
+connect to the beanstalk server via the stream.  Stream must be an open
+network connection.  Options are accepted, but not yet used.
+
+### Beanstalk Command List
 
 Currently implemented (but not all tested):
 
