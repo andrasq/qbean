@@ -64,12 +64,21 @@ compatibility, error strings are an option.
 ### new QBean( options, stream )
 
 connect to the beanstalk server via the stream.  Stream must be an open
-network connection.
+network connection.  Each new QBean needs its own stream; beans can not
+share network connections.
 
 Options:
 
 - `errorStrings` - on error return error messages, not error objects, for
   compatibility with other beanstalk drivers.  The default is to return objects.
+
+        bean = new QBean({errorStrings: false}, net.createConnection(11300, 'localhost'));
+
+#### bean.close( )
+
+do not accept any more commands, and close the connection stream once all
+pending replies have been received.  A closed bean can not be re-opened; a new
+bean should be created instead.
 
 ### Beanstalk Command List
 
