@@ -22,9 +22,10 @@ module.exports = {
 
     'should not send commands after closed': function(t) {
         this.bean.close();
-        t.expect(1);
+        t.expect(2);
         this.bean.put(0, 0, 0, "payload", function(err, jobid) {
             t.ok(err);
+            t.ok(err.message.indexOf("CLOSED") > 0);
             t.done();
         });
     },
