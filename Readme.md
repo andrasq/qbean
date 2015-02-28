@@ -74,13 +74,13 @@ Options:
 
         bean = new QBean({errorStrings: false}, net.createConnection(11300, 'localhost'));
 
-#### bean.close( )
+#### close( )
 
 do not accept any more commands, and close the connection stream once all
 pending replies have been received.  A closed bean can not be re-opened; a new
 bean should be created instead.
 
-### Beanstalk Command List
+### Beanstalk Commands
 
 Currently implemented (but not all tested):
 
