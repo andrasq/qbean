@@ -61,7 +61,7 @@ compatibility, error strings are an option.
       });
     });
 
-### new QBean( options, stream )
+### new QBean( [options], stream )
 
 connect to the beanstalk server via the stream.  Stream must be an open
 network connection.  Each new QBean needs its own stream; beans can not
