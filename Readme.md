@@ -40,7 +40,7 @@ parses the yaml and returns an object or a list, as appropriate.
 Beanstalk limits tube names to at most 200 bytes.
 
 QBean returns error objects on errors, not error strings.  However, for
-compatibility, error strings are an options.
+compatibility, error strings are an option.
 
 ### Summary
 
@@ -64,7 +64,7 @@ compatibility, error strings are an options.
 ### new QBean( options, stream )
 
 connect to the beanstalk server via the stream.  Stream must be an open
-network connection.  Options are accepted, but not yet used.
+network connection.
 
 Options:
 
