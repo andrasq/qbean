@@ -39,7 +39,8 @@ parses the yaml and returns an object or a list, as appropriate.
 
 Beanstalk limits tube names to at most 200 bytes.
 
-QBean returns error objects on errors, not error strings.
+QBean returns error objects on errors, not error strings.  However, for
+compatibility, error strings are an options.
 
 ### Summary
 
@@ -64,6 +65,11 @@ QBean returns error objects on errors, not error strings.
 
 connect to the beanstalk server via the stream.  Stream must be an open
 network connection.  Options are accepted, but not yet used.
+
+Options:
+
+- `errorStrings` - on error return error messages, not error objects, for
+  compatibility with other beanstalk drivers.  The default is to return objects.
 
 ### Beanstalk Command List
 
