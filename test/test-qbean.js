@@ -12,7 +12,9 @@ module.exports = {
             self.bean.use(self.channel, function(err, using) {
                 if (err) return done(err);
                 self.bean.watch(self.channel, function(err, watching) {
-                    done(err);
+                    self.bean.ignore('default', function(err, watching) {
+                        done(err);
+                    });
                 });
             });
         });
@@ -55,7 +57,6 @@ module.exports = {
         var self = this;
         self.bean.list_tubes_watched(function(err, watchList) {
             t.ifError(err);
-            t.ok(watchList.indexOf('default') >= 0);
             t.ok(watchList.indexOf(self.channel) >= 0);
             t.done();
         });
@@ -63,12 +64,15 @@ module.exports = {
 
     'should ignore named tube': function(t) {
         var self = this;
-        self.bean.ignore(self.channel, function(err, watchingCount) {
+        self.bean.watch(self.channel + "-2nd", function(err, watchingCount) {
             t.ifError(err);
-            self.bean.list_tubes_watched(function(err, watchList) {
+            self.bean.ignore(self.channel, function(err, watchingCount) {
                 t.ifError(err);
-                t.ok(watchList.indexOf(self.channel) < 0);
-                t.done();
+                self.bean.list_tubes_watched(function(err, watchList) {
+                    t.ifError(err);
+                    t.ok(watchList.indexOf(self.channel) < 0);
+                    t.done();
+                });
             });
         });
     },
@@ -85,22 +89,45 @@ module.exports = {
         });
     },
 
+    'should send and receive 8-bit characters in strings': function(t) {
+        var self = this;
+        var i, payload = "";
+        for (i=0; i<256; i++) payload += String.fromCharCode(i);
+        self.bean.use(self.channel + '-binary', function(err, using) {
+            t.ifError(err);
+            self.bean.put(0, 0, 10, payload, function(err, jobid) {
+                t.ifError(err);
+                self.bean.watch(self.channel + '-binary', function(err, watching) {
+                    t.ifError(err);
+                    self.bean.ignore(self.channel, function(err, watching) {
+                        t.ifError(err);
+                        self.bean.reserve_with_timeout(0, function(err, jobid, ret) {
+                            t.ifError();
+                            t.equal(ret, payload);
+                            t.done();
+                        });
+                    });
+                });
+            });
+        });
+    },
+
     'should talk on two different streams': function(t) {
         var self = this;
         var socket2 = net.createConnection(11300, 'localhost', function() {
             var bean2 = new QBean({}, socket2);
             var ndone = 0;
             t.expect(2);
-            bean2.watch('unittest2', function(err, watching) {
+            bean2.watch(self.channel + "-v2", function(err, watching) {
                 t.ifError(err);
-                bean2.ignore('unittest2', function(err) {
+                bean2.ignore(self.channel + "-v2", function(err) {
                     ndone += 1;
                     if (ndone == 2) { bean2.close(); t.done(); }
                 })
             });
-            self.bean.watch('unittest1', function(err, watching) {
+            self.bean.watch(self.channel + "-v1", function(err, watching) {
                 t.ifError(err);
-                self.bean.ignore('unittest1', function(err) {
+                self.bean.ignore(self.channel + "-v1", function(err) {
                     ndone += 1;
                     if (ndone == 2) { bean2.close(); t.done(); }
                 });
@@ -147,23 +174,26 @@ module.exports = {
         function purgeOverSocket(socket, cb) {
             var ndone = 0, bean = new QBean({}, socket);
             socket.on('connect', function() {
-                bean.watch('unittest', function(err, watching) {
+                bean.watch(self.channel, function(err, watching) {
                     if (err) return cb(err);
-                    // multiple concurrent per socket
-                    for (var i=0; i<40; i++) (function consume() {
-                        bean.reserve_with_timeout(0, function(err, jobid, payload) {
-                            if (err || !jobid) {
-                                bean.ignore('unittest', function(err) {
-                                    ndone += 1;
-                                    if (ndone === nsockets) t.done();
-                                });
-                                return cb();
-                            }
-                            bean.delete(jobid, function(err) {
-                                setImmediate(consume);
-                            })
-                        });
-                    })();
+                    bean.watch(self.channel + '-binary', function(err, watching) {
+                        if (err) return cb(err);
+                        // multiple concurrent per socket
+                        for (var i=0; i<40; i++) (function consume() {
+                            bean.reserve_with_timeout(0, function(err, jobid, payload) {
+                                if (err || !jobid) {
+                                    bean.ignore(self.channel, function(err) {
+                                        ndone += 1;
+                                        if (ndone === nsockets) t.done();
+                                    });
+                                    return cb();
+                                }
+                                bean.delete(jobid, function(err) {
+                                    setImmediate(consume);
+                                })
+                            });
+                        })();
+                    });
                 });
             });
         }
@@ -182,11 +212,11 @@ module.exports = {
         }
         // 20k/s 40 sockets, 40 concurrent on each; 24k/s 100 and 40
 /***
-        self.bean.watch('unittest', function(err, watching) {
+        self.bean.watch(self.channel, function(err, watching) {
             for (var i=0; i<nsockets; i++) (function consume() {
                 self.bean.reserve_with_timeout(0, function(err, jobid, payload) {
                     if (err || !jobid) {
-                        self.bean.ignore('unittest', function(err) {
+                        self.bean.ignore(self.channel, function(err) {
                             t.ok(true);
                             ndone += 1;
                             if (ndone === nsockets) t.done();

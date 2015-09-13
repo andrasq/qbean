@@ -9,7 +9,7 @@ self-teaching exercise but was quickly transitioned into production when
 fivebeans deadlocked on one of the kqueue tests.
 
 For the full beanstalk command list, see the
-[Beanstalkd Protocol](https://github.com/kr/beanstalkd/blob/master/doc/protocol.md).
+[Beanstalkd Protocol](https://github.com/kr/beanstalkd/blob/master/doc/protocol.en-US.md)
 
 See also [kqueue](https://github.com/Kinvey/kqueue).
 
