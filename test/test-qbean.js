@@ -10,7 +10,10 @@ module.exports = {
         this.stream = net.createConnection(11300, 'localhost', function() {
             self.bean = new QBean({}, self.stream);
             self.bean.use(self.channel, function(err, using) {
-                return done(err);
+                if (err) return done(err);
+                self.bean.watch(self.channel, function(err, watching) {
+                    done(err);
+                });
             });
         });
     },
@@ -45,6 +48,40 @@ module.exports = {
             t.ok(err);
             t.ok(err.message.indexOf("CLOSED") > 0);
             t.done();
+        });
+    },
+
+    'should list tubes watched': function(t) {
+        var self = this;
+        self.bean.list_tubes_watched(function(err, watchList) {
+            t.ifError(err);
+            t.ok(watchList.indexOf('default') >= 0);
+            t.ok(watchList.indexOf(self.channel) >= 0);
+            t.done();
+        });
+    },
+
+    'should ignore named tube': function(t) {
+        var self = this;
+        self.bean.ignore(self.channel, function(err, watchingCount) {
+            t.ifError(err);
+            self.bean.list_tubes_watched(function(err, watchList) {
+                t.ifError(err);
+                t.ok(watchList.indexOf(self.channel) < 0);
+                t.done();
+            });
+        });
+    },
+
+    'should watch tube': function(t) {
+        var self = this;
+        self.bean.watch(self.channel + "-2nd", function(err, watchingCount) {
+            t.ifError(err);
+            self.bean.list_tubes_watched(function(err, tubesList) {
+                t.ifError(err);
+                t.ok(tubesList.indexOf(self.channel + "-2nd") >= 0);
+                t.done();
+            });
         });
     },
 

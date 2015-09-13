@@ -1,6 +1,6 @@
 {
   "name": "qbean",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "quick beanstalkd queue client",
   "license": "Apache-2.0",
   "repository": {
