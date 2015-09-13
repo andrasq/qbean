@@ -177,8 +177,11 @@ arrive, then close the connection.  This qbean object will not be usable to
 talk to beanstalk any more (currently, the connection can't be reopened, a new
 connection must be created).
 
-### TODO
+### Todo
 
 - write unit tests
 - write integration tests
 - subclass Error for the standard errors eg NOT_FOUND
+- add method to atomically enqueue (use+put) multiple items
+- make said method accept both strings and objects (stringify on the fly)
+- pass in serializer in options
