@@ -47,6 +47,13 @@ module.exports = {
         t.done();
     },
 
+    'writing a closed socket should return error': function(t) {
+        this.stream.end();
+        this.bean.list_tubes_watched(function(err, ret) {
+            t.done();
+        });
+    },
+
     'should use tube': function(t) {
         t.equal(this.using, this.channel);
         t.done();
