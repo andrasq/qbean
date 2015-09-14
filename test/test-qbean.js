@@ -10,9 +10,13 @@ module.exports = {
         this.stream = net.createConnection(11300, 'localhost', function() {
             self.bean = new QBean({}, self.stream);
             self.bean.use(self.channel, function(err, using) {
+                self.using = using;
                 if (err) return done(err);
                 self.bean.watch(self.channel, function(err, watching) {
+                    if (err) return done(err);
+                    self.watchingCount = watching;
                     self.bean.ignore('default', function(err, watching) {
+                        self.ignoringCount = watching;
                         done(err);
                     });
                 });
@@ -43,6 +47,23 @@ module.exports = {
         t.done();
     },
 
+    'should use tube': function(t) {
+        t.equal(this.using, this.channel);
+        t.done();
+    },
+
+    'should watch tube': function(t) {
+        // watching 'default', added 'unittest'
+        t.equal(this.watchingCount, 2);
+        t.done();
+    },
+
+    'should ignore tube': function(t) {
+        // ignored 1 of 2 watched, now watching 1
+        t.equal(this.ignoringCount, 1);
+        t.done();
+    },
+
     'should not send commands after closed': function(t) {
         this.bean.close();
         t.expect(2);
@@ -62,6 +83,17 @@ module.exports = {
         });
     },
 
+    'should list all tubes': function(t) {
+        var self = this;
+        self.bean.list_tubes(function(err, tubesList) {
+            t.ifError(err);
+            t.ok(Array.isArray(tubesList));
+            t.ok(tubesList.indexOf('default') >= 0);
+            t.ok(tubesList.indexOf(self.channel) >= 0);
+            t.done();
+        });
+    },
+
     'should ignore named tube': function(t) {
         var self = this;
         self.bean.watch(self.channel + "-2nd", function(err, watchingCount) {
@@ -77,7 +109,7 @@ module.exports = {
         });
     },
 
-    'should watch tube': function(t) {
+    'should watch tube again': function(t) {
         var self = this;
         self.bean.watch(self.channel + "-2nd", function(err, watchingCount) {
             t.ifError(err);
@@ -155,7 +187,7 @@ module.exports = {
                 });
             });
         }
-        var nputs = 20000, nsockets = 40;
+        var nputs = 10000, nsockets = 40;
         for (i=0; i<nsockets; i++) {
             var socket = net.connect(11300, 'localhost');
             sendOnSocket(socket, nputs/nsockets, function(err) {
@@ -210,7 +242,7 @@ module.exports = {
                 }
             })
         }
-        // 20k/s 40 sockets, 40 concurrent on each; 24k/s 100 and 40
+        // 20k/s 40 sockets, 40 concurrent on each; 25k/s 40 and 100
 /***
         self.bean.watch(self.channel, function(err, watching) {
             for (var i=0; i<nsockets; i++) (function consume() {
