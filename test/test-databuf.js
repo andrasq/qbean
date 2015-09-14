@@ -174,6 +174,30 @@ module.exports = {
         },
     },
 
+    'skipBytes': {
+        'should advance the read point to bound': function(t) {
+            this.cut.append("test1");
+            this.cut.append("test2");
+            this.cut.append("test3");
+            this.cut.shiftBytes(2);
+            this.cut.skipBytes(7);
+            t.equal(this.cut.length(), 8);
+            t.done();
+        },
+    },
+
+    'seekBytes': {
+        'should concat buffers up to bound': function(t) {
+            this.cut.append("test1");
+            this.cut.append("test2");
+            this.cut.append("test3");
+            this.cut.seekBytes(7);
+            t.equal(this.cut.chunks[0].toString(), "test1test2");
+            t.equal(this.cut.chunks[1].toString(), "test3");
+            t.done();
+        },
+    },
+
     '_bufHasSubstring': {
         'should match the substring against the Buffer at offset': function(t) {
             var buf = new Buffer("test string");
