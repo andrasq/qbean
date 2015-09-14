@@ -140,6 +140,25 @@ module.exports = {
         },
     },
 
+    'unshiftBytes': {
+        'should prepend data': function(t) {
+            this.cut.append("test1");
+            this.cut.unshiftBytes("test2");
+            var line = this.cut.shiftBytes(10, true);
+            t.equal(line, "test2test1");
+            t.done();
+        },
+
+        'should prepend data before start': function(t) {
+            this.cut.append("test0test1");
+            this.cut.shiftBytes(5);
+            this.cut.unshiftBytes("test2");
+            var line = this.cut.shiftBytes(10, true);
+            t.equal(line, "test2test1");
+            t.done();
+        },
+    },
+
     '_bufHasSubstring': {
         'should match the substring against the Buffer at offset': function(t) {
             var buf = new Buffer("test string");
