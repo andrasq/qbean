@@ -37,6 +37,7 @@ module.exports = {
 
     'options should be optional': function(t) {
         var bean = new QBean(this.stream);
+        bean.close();
         t.done();
     },
 
@@ -189,7 +190,11 @@ module.exports = {
                     if (err) cb(err)
                     for (var i=0; i<n; i++) bean.put(0, 0, 10, payload, function(err, jobid) {
                         ndone += 1;
-                        if (err || ndone === n) cb(err)
+                        if (err || ndone === n) {
+                            socket.end();
+                            bean.close();
+                            cb(err)
+                        }
                     })
                 });
             });
@@ -211,24 +216,22 @@ module.exports = {
     'should purge old unittest messages': function(t) {
         var self = this;
         function purgeOverSocket(socket, cb) {
-            var ndone = 0, bean = new QBean({}, socket);
+            var ndone = 0, bean = new QBean({}, socket), nconcurrent = 40;
             socket.on('connect', function() {
                 bean.watch(self.channel, function(err, watching) {
                     if (err) return cb(err);
                     bean.watch(self.channel + '-binary', function(err, watching) {
                         if (err) return cb(err);
                         // multiple concurrent per socket
-                        for (var i=0; i<40; i++) (function consume() {
+                        for (var i=0; i<nconcurrent; i++) (function purgeLoop() {
                             bean.reserve_with_timeout(0, function(err, jobid, payload) {
                                 if (err || !jobid) {
-                                    bean.ignore(self.channel, function(err) {
-                                        ndone += 1;
-                                        if (ndone === nsockets) t.done();
-                                    });
-                                    return cb();
+                                    socket.end();
+                                    bean.close();
+                                    if (++ndone == nconcurrent) return cb();
                                 }
                                 bean.delete(jobid, function(err) {
-                                    setImmediate(consume);
+                                    setImmediate(purgeLoop);
                                 })
                             });
                         })();
@@ -242,8 +245,6 @@ module.exports = {
         for (var i=0; i<nsockets; i++) {
             var socket = net.connect(11300, 'localhost');
             purgeOverSocket(socket, function(err) {
-// FIXME: occasionally qunit reports way too many calls to t.ifError tests
-// FIXME: easiest to reproduce with nodeunit, which always fails; incr in groups of 12,13
                 t.ifError(err);
                 ndone += 1;
                 if (ndone === nsockets) {
@@ -252,28 +253,6 @@ module.exports = {
             })
         }
         // 20k/s 40 sockets, 40 concurrent on each; 25k/s 40 and 100
-/***
-        self.bean.watch(self.channel, function(err, watching) {
-            for (var i=0; i<nsockets; i++) (function consume() {
-                self.bean.reserve_with_timeout(0, function(err, jobid, payload) {
-                    if (err || !jobid) {
-                        self.bean.ignore(self.channel, function(err) {
-                            t.ok(true);
-                            ndone += 1;
-                            if (ndone === nsockets) t.done();
-                        });
-                        return;
-                    }
-                    self.bean.delete(jobid, function(err) {
-                        setImmediate(consume);
-                    })
-                });
-            })();
-        });
-        // 10k/s 10k over 20 concurrent, 12.5k/s over 40, 13.7k over 200
-        // 12.5k/s 100k over 40
-        // 4-core cpu: 60% node, 50% beanstalkd
-***/
     },
 
     'report mem usage': function(t) {
