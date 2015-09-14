@@ -191,7 +191,6 @@ module.exports = {
                     for (var i=0; i<n; i++) bean.put(0, 0, 10, payload, function(err, jobid) {
                         ndone += 1;
                         if (err || ndone === n) {
-                            socket.end();
                             bean.close();
                             cb(err)
                         }
@@ -226,9 +225,8 @@ module.exports = {
                         for (var i=0; i<nconcurrent; i++) (function purgeLoop() {
                             bean.reserve_with_timeout(0, function(err, jobid, payload) {
                                 if (err || !jobid) {
-                                    socket.end();
                                     bean.close();
-                                    if (++ndone == nconcurrent) return cb();
+                                    if (++ndone >= nconcurrent) return cb();
                                 }
                                 bean.delete(jobid, function(err) {
                                     setImmediate(purgeLoop);
