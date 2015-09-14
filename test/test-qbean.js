@@ -81,7 +81,7 @@ module.exports = {
         });
     },
 
-    'should list tubes watched': function(t) {
+    'should list tubes watched (should parse YAML)': function(t) {
         var self = this;
         self.bean.list_tubes_watched(function(err, watchList) {
             t.ifError(err);
@@ -242,6 +242,8 @@ module.exports = {
         for (var i=0; i<nsockets; i++) {
             var socket = net.connect(11300, 'localhost');
             purgeOverSocket(socket, function(err) {
+// FIXME: occasionally qunit reports way too many calls to t.ifError tests
+// FIXME: easiest to reproduce with nodeunit, which always fails; incr in groups of 12,13
                 t.ifError(err);
                 ndone += 1;
                 if (ndone === nsockets) {
@@ -272,5 +274,10 @@ module.exports = {
         // 12.5k/s 100k over 40
         // 4-core cpu: 60% node, 50% beanstalkd
 ***/
+    },
+
+    'report mem usage': function(t) {
+        console.log(process.memoryUsage());
+        t.done();
     },
 };
