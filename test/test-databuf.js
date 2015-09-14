@@ -159,6 +159,21 @@ module.exports = {
         },
     },
 
+    'peekBytes': {
+        'should return start of data': function(t) {
+            this.cut.append("test1test2");
+            t.equal(this.cut.peekBytes(7, true), "test1te");
+            t.done();
+        },
+
+        'should offset data to start': function(t) {
+            this.cut.append("test1test2test3");
+            this.cut.shiftBytes(3);
+            t.equal(this.cut.peekBytes(10, true), "t1test2");
+            t.done();
+        },
+    },
+
     '_bufHasSubstring': {
         'should match the substring against the Buffer at offset': function(t) {
             var buf = new Buffer("test string");
